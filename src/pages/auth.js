@@ -22,4 +22,16 @@ const logout = () => {
   cookies.remove('refreshToken');
 };
 
-export default { login, logout, setRefreshTokenToCookie };
+const getAccessToken = () => {
+  const refreshToken = cookies.get('refreshToken');
+  if (refreshToken) {
+    return {
+      accessToken: 'djasdkjfjfj',
+      refreshToken: 'asdjflkdasjlkfjsjf',
+    };
+  } else {
+    return undefined;
+  }
+};
+
+export default { login, logout, setRefreshTokenToCookie, getAccessToken };

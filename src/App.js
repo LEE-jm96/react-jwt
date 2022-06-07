@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 import auth from './pages/auth';
@@ -22,6 +22,7 @@ function reducer(state, action) {
       return state;
   }
 }
+
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { authenticated } = state;
@@ -45,6 +46,40 @@ function App() {
       });
     }
   };
+
+  const handleLogout = () => {
+    dispatch({
+      type: 'DELETE_TOKEN',
+    });
+    auth.logout();
+  };
+
+  useEffect(() => {
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'logout') {
+        console.log('로그아웃 감지');
+        dispatch({
+          type: 'DELETE_TOKEN',
+        });
+      }
+    });
+  });
+
+  useEffect(() => {
+    const token = auth.getAccessToken();
+    if (token) {
+      dispatch({
+        type: 'SET_TOKEN',
+        token: token,
+        result: true,
+      });
+      auth.setRefreshTokenToCookie(token.refreshToken);
+    } else {
+      dispatch({
+        type: 'DELETE_TOKEN',
+      });
+    }
+  }, [authenticated]);
   return (
     <Routes>
       <Route exact path="/" element={<Home />} />
@@ -53,7 +88,11 @@ function App() {
         authenticated={authenticated}
         element={<Login handleLogin={handleLogin} />}
       />
-      <Route path="/hello" authenticated={authenticated} element={<Hello />} />
+      <Route
+        path="/hello"
+        authenticated={authenticated}
+        element={<Hello handleLogout={handleLogout} />}
+      />
     </Routes>
   );
 }
